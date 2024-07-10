@@ -28,12 +28,29 @@ bool IsWorkingAutoUpDate(std::unordered_map<std::string, std::string>& keyValueM
 #define SVCNAME TEXT("VPOS WatchDog")
 #define EXENAME TEXT("VPos_Connector.exe")
 
+int gInitialDelayTime = 15;
 
 int _tmain(int argc, TCHAR* argv[]) {
 
     TCHAR logBuf[2048];
     TCHAR SVCNAME_T[1024];
     swprintf_s(SVCNAME_T,_countof(SVCNAME_T), L"%s", SVCNAME);
+    
+    if (argc > 1)
+    {
+        // Check if the argument starts with "--DeleyTime="
+        const TCHAR* prefix = TEXT("--DelaySec=");
+        size_t prefixLen = _tcslen(prefix);
+
+        if (_tcsncmp(argv[1], prefix, prefixLen) == 0)
+        {
+            // Extract the integer value after the prefix
+            int value = _ttoi(argv[1] + prefixLen);
+            if ( value > 0 && value <= 300 ) {      // 최대 300초 
+                gInitialDelayTime = value;
+            }
+        }
+    }
 
     SERVICE_TABLE_ENTRY ServiceTable[] = {
         { SVCNAME_T, (LPSERVICE_MAIN_FUNCTION)ServiceMain },
@@ -82,6 +99,10 @@ void ServiceMain(int argc, char** argv) {
         SvcReportEvent(logBuf);
         return;
     }
+    memset(logBuf, 0x00, _countof(logBuf));
+    swprintf_s(logBuf, _countof(logBuf), L"Retry Delay Second[%d]", gInitialDelayTime);
+    SvcReportEvent(logBuf);
+
 
     ServiceStatus.dwCurrentState = SERVICE_RUNNING;
     SetServiceStatus(hStatus, &ServiceStatus);
@@ -98,7 +119,7 @@ void ServiceMain(int argc, char** argv) {
                 RunNotepadAsCurrentUser();
             }
         }
-        Sleep(11000); // 11초 동안 대기
+        Sleep(gInitialDelayTime * 1000 );
     }
 
     return;
