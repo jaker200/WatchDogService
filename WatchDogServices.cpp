@@ -88,7 +88,7 @@ void ServiceMain(int argc, char** argv) {
     swprintf_s(sExeName, _countof(sExeName), TEXT("%s"), EXENAME);
 
     const char* section = "UPDATE";
-    const char* path = "C:\\KOVAN\\update_result.ini";
+    const char* path = "C:\\KOVAN\\updatefile\\update_result.ini";
 
     std::unordered_map<std::string, std::string> myUnorderedMap;
 
